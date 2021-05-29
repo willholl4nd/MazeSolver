@@ -6,7 +6,8 @@ JVM = java
 	$(JC) $(JFLAGS) $*.java
 
 CLASSES = \
-	  Main.java 
+	  Main.java \
+	  Timer.java
 
 MAIN = Main
 
@@ -18,4 +19,4 @@ run: $(MAIN).class
 	$(JVM) $(MAIN) 
 
 clean:
-	$(RM) *.class
+	rm *.class

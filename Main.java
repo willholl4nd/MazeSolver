@@ -16,6 +16,8 @@ public class Main {
 	static Nuts nodes[][];
 	
 	public static void main(String args[]) throws IOException {
+		Timer t = new Timer();
+		t.start();
 		bf = null;
 		File f = null;	
 		nodeCount = 0;
@@ -142,7 +144,9 @@ public class Main {
 		//TODO Rewrite to a new file with the solved maze
 		for(Nuts n : path) 
 			System.out.println(n);
-
+		t.end();
+		System.out.println("Took " + t.getTimeFromStart());
+		System.out.println("There are " + path.size() + " nodes in the final path");
 	}
 
 	public static ArrayList<Nuts> findPath() {

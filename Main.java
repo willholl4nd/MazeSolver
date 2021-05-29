@@ -1,8 +1,8 @@
-import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.io.IOException;
+import java.io.*;
 import java.awt.image.*;
 import java.awt.Color;
 import javax.imageio.ImageIO;
@@ -16,8 +16,6 @@ public class Main {
 	static Nuts nodes[][];
 	
 	public static void main(String args[]) throws IOException {
-		Timer t = new Timer();
-		t.start();
 		bf = null;
 		File f = null;	
 		nodeCount = 0;
@@ -29,10 +27,14 @@ public class Main {
 		endNode = null;
 		currentNode = null;
 		String filename = "new1.png";
+		File copy = new File(filename.split(".png")[0] + "solved.png");
 
 		try {
 			f = new File(filename);
-			bf = ImageIO.read(f);
+			copy.createNewFile();
+			FileOutputStream copyOut = new FileOutputStream(copy);
+			Files.copy(f.toPath(), copyOut); 
+			bf = ImageIO.read(copy);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -144,9 +146,33 @@ public class Main {
 		//TODO Rewrite to a new file with the solved maze
 		for(Nuts n : path) 
 			System.out.println(n);
-		t.end();
-		System.out.println("Took " + t.getTimeFromStart());
-		System.out.println("There are " + path.size() + " nodes in the final path");
+
+		bf.setRGB(startNode.pos.col, startNode.pos.row, Color.red.getRGB());
+		for(int i = 0; i < path.size()-1; i++) {
+			Nuts n = path.get(i);
+			Nuts toN = path.get(i+1);
+			int colDif = toN.pos.col - n.pos.col;
+			int rowDif = toN.pos.row - n.pos.row;
+			if(colDif < 0) {
+				for(int j = 0; j < Math.abs(colDif); j++)
+					bf.setRGB(n.pos.col - j, n.pos.row, Color.red.getRGB());
+			} else if(colDif > 0) {
+				for(int j = 0; j < Math.abs(colDif); j++)
+					bf.setRGB(n.pos.col + j, n.pos.row, Color.red.getRGB());
+
+			} else if(rowDif < 0) {
+				for(int j = 0; j < Math.abs(rowDif); j++)
+					bf.setRGB(n.pos.col, n.pos.row - j, Color.red.getRGB());
+
+			} else if(rowDif > 0) {
+				for(int j = 0; j < Math.abs(rowDif); j++)
+					bf.setRGB(n.pos.col, n.pos.row + j, Color.red.getRGB());
+
+			}
+		}
+
+		ImageIO.write(bf, "png", copy);
+
 	}
 
 	public static ArrayList<Nuts> findPath() {

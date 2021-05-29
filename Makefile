@@ -1,4 +1,4 @@
-JFLAGS = -g -Xlint
+JFLAGS = -g 
 JC = javac
 JVM = java
 .SUFFIXES: .java .class

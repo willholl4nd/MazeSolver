@@ -16,6 +16,8 @@ public class Main {
 	static Nuts nodes[][];
 	
 	public static void main(String args[]) throws IOException {
+		Timer t = new Timer();
+		t.start();
 		bf = null;
 		File f = null;	
 		nodeCount = 0;
@@ -26,7 +28,9 @@ public class Main {
 		startNode = null;
 		endNode = null;
 		currentNode = null;
-		String filename = "new1.png";
+		String filename = "3000.png";
+		if(args.length > 0)
+			filename = args[0];
 		File copy = new File(filename.split(".png")[0] + "solved.png");
 
 		try {
@@ -141,12 +145,11 @@ public class Main {
 			}
 		}
 
+		System.out.println("Starting A* algorithm");
 		ArrayList<Nuts> path = findPath();	
-
-		//TODO Rewrite to a new file with the solved maze
-		for(Nuts n : path) 
-			System.out.println(n);
-
+		System.out.println("Path length: " + path.size());
+	
+		System.out.println("Saving solution image back to png");
 		bf.setRGB(startNode.pos.col, startNode.pos.row, Color.red.getRGB());
 		for(int i = 0; i < path.size()-1; i++) {
 			Nuts n = path.get(i);
@@ -172,6 +175,8 @@ public class Main {
 		}
 
 		ImageIO.write(bf, "png", copy);
+		t.end();
+		System.out.println("Took " + t.getTimeFromStart());
 
 	}
 

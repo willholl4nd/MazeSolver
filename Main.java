@@ -28,13 +28,13 @@ public class Main {
 		startNode = null;
 		endNode = null;
 		currentNode = null;
-		String filename = "3000.png";
+		String filename = "unsolved/3000.png";
 		if(args.length > 0)
 			filename = args[0];
-		File copy = new File(filename.split(".png")[0] + "solved.png");
+		File copy = new File("solved/" + filename.split(".png")[0] + "solved.png");
 
 		try {
-			f = new File(filename);
+			f = new File("unsolved/" + filename);
 			copy.createNewFile();
 			FileOutputStream copyOut = new FileOutputStream(copy);
 			Files.copy(f.toPath(), copyOut); 

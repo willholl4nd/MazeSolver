@@ -16,7 +16,7 @@ default: classes
 classes: $(CLASSES:.java=.class)
 
 run: $(MAIN).class
-	$(JVM) $(MAIN) 
+	$(JVM) $(MAIN) 1000.png
 
 test: $(MAIN).class
 	$(JVM) $(MAIN) 100.png

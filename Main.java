@@ -151,25 +151,33 @@ public class Main {
 	
 		System.out.println("Saving solution image back to png");
 		bf.setRGB(startNode.pos.col, startNode.pos.row, Color.red.getRGB());
+		double cyclesOfTheRainbow = 1;
+		double Hchange = (cyclesOfTheRainbow * 360) / (double)path.size();
+		double H = 0, S = 1, V = 1;
 		for(int i = 0; i < path.size()-1; i++) {
+			H += Hchange;
 			Nuts n = path.get(i);
 			Nuts toN = path.get(i+1);
 			int colDif = toN.pos.col - n.pos.col;
 			int rowDif = toN.pos.row - n.pos.row;
+			if(H >= 360)
+				H = 0;
+			Color c = getRGB(H, S, V);
 			if(colDif < 0) {
-				for(int j = 0; j < Math.abs(colDif); j++)
-					bf.setRGB(n.pos.col - j, n.pos.row, Color.red.getRGB());
+				for(int j = 0; j < Math.abs(colDif); j++) {
+					bf.setRGB(n.pos.col - j, n.pos.row, c.getRGB());
+				}
 			} else if(colDif > 0) {
 				for(int j = 0; j < Math.abs(colDif); j++)
-					bf.setRGB(n.pos.col + j, n.pos.row, Color.red.getRGB());
+					bf.setRGB(n.pos.col + j, n.pos.row, c.getRGB());
 
 			} else if(rowDif < 0) {
 				for(int j = 0; j < Math.abs(rowDif); j++)
-					bf.setRGB(n.pos.col, n.pos.row - j, Color.red.getRGB());
+					bf.setRGB(n.pos.col, n.pos.row - j, c.getRGB());
 
 			} else if(rowDif > 0) {
 				for(int j = 0; j < Math.abs(rowDif); j++)
-					bf.setRGB(n.pos.col, n.pos.row + j, Color.red.getRGB());
+					bf.setRGB(n.pos.col, n.pos.row + j, c.getRGB());
 
 			}
 		}
@@ -178,6 +186,42 @@ public class Main {
 		t.end();
 		System.out.println("Took " + t.getTimeFromStart());
 
+	}
+
+	public static Color getRGB(double H, double S, double V) {
+		double C = V * S;
+		double X = C * (1 - Math.abs((H / 60) % 2 - 1));
+		double m = V - C;
+		double Rprime=0, Gprime=0, Bprime=0;
+		if(H >= 0 && H < 60) {
+			Rprime = C;
+			Gprime = X;
+			Bprime = 0;
+		} else if(H >= 60 && H < 120) {
+			Rprime = X;
+			Gprime = C;
+			Bprime = 0;
+		} else if(H >= 120 && H < 180) {
+			Rprime = 0;
+			Gprime = C;
+			Bprime = X;
+		} else if(H >= 180 && H < 240) {
+			Rprime = 0;
+			Gprime = X;
+			Bprime = C;
+		} else if(H >= 240 && H < 300) {
+			Rprime = X;
+			Gprime = 0;
+			Bprime = C;
+		} else if(H >= 300 && H < 360) {
+			Rprime = C;
+			Gprime = 0;
+			Bprime = X;
+		}
+		Color c = new Color((int)((Rprime+m)*255), (int)((Gprime+m)*255), (int)((Bprime+m)*255));
+//		System.out.println(c.getRGB());
+//		System.out.printf("R': %f, G': %f, B': %f, m: %f\n", Rprime, Gprime, Bprime, m);
+		return c;
 	}
 
 	public static ArrayList<Nuts> findPath() {

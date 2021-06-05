@@ -1,7 +1,6 @@
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.io.*;
 import java.awt.image.*;
 import java.awt.Color;
@@ -12,8 +11,8 @@ public class Main {
 	static BufferedImage bf;
 	static int width, height, wall, nodeCount;	
 	static int count1, count2, count3, count4;
-	static Nuts startNode, endNode, currentNode;
-	static Nuts nodes[][];
+	static Node startNode, endNode, currentNode;
+	static Node nodes[][];
 	
 	public static void main(String args[]) throws IOException {
 		Timer t = new Timer();
@@ -32,7 +31,6 @@ public class Main {
 		if(args.length > 0)
 			filename = args[0];
 		File copy = new File("solved/" + filename.split(".png")[0] + "solved.png");
-
 		try {
 			f = new File("unsolved/" + filename);
 			copy.createNewFile();
@@ -57,52 +55,32 @@ public class Main {
 		}
 
 		ArrayList<Pos> positions = findNodePositions();
-		nodes = new Nuts[height][width];
+		nodes = new Node[height][width];
 		generateNodes(positions);
 		System.out.println("The total number of nodes is " + nodeCount);
 		System.out.printf("Number of nodes with: 1 path-%d, 2 paths-%d, 3 paths-%d, 4 paths-%d\n", count1, count2, count3, count4);
-		//To make the graph and connect all of the vertices correctly, I will need to create
-		//an 2d array of all of the nodes. I will perform two passes over the entire array.
-		//The first pass will be for connecting the nodes side-to-side by storing a currentNode
-		//and checking if that node has a node it is connected to on the right. If so, we will
-		//move along that row until we hit the node. If not, we move to the next node and check
-		//if it has a node to the right, and so on. The same process will be applied to the 
-		//vertical pass of this algorithm.
 
-		//TODO Exploit the horizontal and vertical pass to find the neighboring nodes
-		//and store them in the nuts neighbor arraylist
-
-//		System.out.println("Now working on the horizontal pass");
-
-		Nuts currentNode = nodes[1][0];	
+		Node currentNode = nodes[1][0];	
 		boolean hasEast = currentNode.east;
-
 
 		for(int i = 1; i < height; i++) {
 			for(int j = 1; j < width; j++){
 				if(nodes[i][j] != null) {
-//					System.out.println();
-//					System.out.println("NODE FOUND " + nodes[i][j]);
 					if(hasEast && nodes[i][j].west) {
-//						System.out.println("Found the node next to " + currentNode.pos);
-						Nuts temp = nodes[i][j];
+						Node temp = nodes[i][j];
 
 						currentNode.neighbors.add(temp);
 						temp.neighbors.add(currentNode);
-//						System.out.println("Creating edge between " + currentNode.pos + " and " +  nodes[i][j].pos);
 
 						//If temp has a path to the east, we make that the next currentNode
 						if(nodes[i][j].east) {
-//							System.out.println("Found node has a node east of it");
 							currentNode = nodes[i][j];
 						} else {
-//							System.out.println("Found node doesn't have a node east of it");
 							currentNode = null;
 							hasEast = false;
 						}
 					} else {
 						//Handle if there is no current node or vertex	
-//						System.out.println("Found the next current node");
 						currentNode = nodes[i][j];
 						hasEast = currentNode.east;
 					}
@@ -110,7 +88,6 @@ public class Main {
 			}
 		}
 
-//		System.out.println("\n\nNow working on the vertical passes");
 
 		currentNode = nodes[1][1];
 		boolean hasSouth = currentNode == null ? false : currentNode.south;
@@ -118,26 +95,19 @@ public class Main {
 		for(int j = 1; j < width; j++){
 			for(int i = 1; i < height; i++) {
 				if(nodes[i][j] != null) {
-//					System.out.println();
-//					System.out.println("NODE FOUND " + nodes[i][j]);
 					if(hasSouth && nodes[i][j].north){
-//						System.out.println("Found the node below the " + currentNode.pos);
-						Nuts temp = nodes[i][j];
+						Node temp = nodes[i][j];
 
 						currentNode.neighbors.add(temp);
 						temp.neighbors.add(currentNode);
-//						System.out.println("Creating edge between " + currentNode.pos + " and " +  nodes[i][j].pos);
 						
 						if(nodes[i][j].south) {
-//							System.out.println("Found node has a node south of it");
 							currentNode = nodes[i][j];
 						} else {
-//							System.out.println("Found node doesn't have a node south of it");
 							currentNode = null;
 							hasSouth = false;
 						}
 					} else {
-//						System.out.println("Found the next current node");
 						currentNode = nodes[i][j];
 						hasSouth = currentNode.south;
 					}
@@ -146,7 +116,7 @@ public class Main {
 		}
 
 		System.out.println("Starting A* algorithm");
-		ArrayList<Nuts> path = findPath();	
+		ArrayList<Node> path = findPath();	
 		System.out.println("Path length: " + path.size());
 	
 		System.out.println("Saving solution image back to png");
@@ -156,8 +126,8 @@ public class Main {
 		double H = 0, S = 1, V = 1;
 		for(int i = 0; i < path.size()-1; i++) {
 			H += Hchange;
-			Nuts n = path.get(i);
-			Nuts toN = path.get(i+1);
+			Node n = path.get(i);
+			Node toN = path.get(i+1);
 			int colDif = toN.pos.col - n.pos.col;
 			int rowDif = toN.pos.row - n.pos.row;
 			if(H >= 360)
@@ -224,22 +194,22 @@ public class Main {
 		return c;
 	}
 
-	public static ArrayList<Nuts> findPath() {
+	public static ArrayList<Node> findPath() {
 		//Start generating the h values (the distance from the node to the last node)
 		//We will use euclidean distance (sqrt[(x1 - x2)^2 + (y1 - y2)^2])
 
-		for(Nuts[] nt : nodes) {
-			for(Nuts n : nt) {
+		for(Node[] nt : nodes) {
+			for(Node n : nt) {
 				if(n != null) n.h = Math.sqrt(Math.pow(n.pos.row - endNode.pos.row, 2) + Math.pow(n.pos.col - endNode.pos.col, 2));
 			}
 		}
 		currentNode = startNode;
 
 		//Create three arraylists: one for the open list, one for the closed list, and one for the path
-		ArrayList<Nuts> openList = new ArrayList<>();
-		ArrayList<Nuts> closedList = new ArrayList<>();
-		ArrayList<Nuts> path = new ArrayList<>();
-		Nuts lastNode = null;
+		ArrayList<Node> openList = new ArrayList<>();
+		ArrayList<Node> closedList = new ArrayList<>();
+		ArrayList<Node> path = new ArrayList<>();
+		Node lastNode = null;
 		
 		openList.add(currentNode);
 		currentNode.g = 0; 
@@ -257,7 +227,7 @@ public class Main {
 				break;
 			}
 
-			for(Nuts n : currentNode.neighbors) {
+			for(Node n : currentNode.neighbors) {
 				if(!closedList.contains(n)) {
 					double tentativeG = currentNode.g + 1;
 					if(tentativeG < n.g) {
@@ -272,7 +242,7 @@ public class Main {
 		}
 
 		path.add(endNode);
-		Nuts n = lastNode;
+		Node n = lastNode;
 		while(n.cameFrom != null) {
 			path.add(n);
 			n = n.cameFrom;
@@ -298,7 +268,7 @@ public class Main {
 			
 			//indices: 0 = east, 1 = west, 2 = south, 3 = north
 			boolean walls[] = findWalls(j, i);
-			nodes[i][j] = new Nuts(p, walls[0], walls[1], walls[2], walls[3]);
+			nodes[i][j] = new Node(p, walls[0], walls[1], walls[2], walls[3]);
 		}
 	}
 
@@ -366,19 +336,19 @@ public class Main {
 	}
 }
 
-class Nuts {
+class Node {
 
 	Pos pos;
 	boolean east, west, south, north;
 	int routes;
 	double f, g, h;
 	boolean isStartNode, isEndNode;
-	ArrayList<Nuts> neighbors;
-	Nuts cameFrom;
+	ArrayList<Node> neighbors;
+	Node cameFrom;
 
-	public Nuts(Pos pos, boolean east, boolean west, boolean south, boolean north) {
+	public Node(Pos pos, boolean east, boolean west, boolean south, boolean north) {
 		this.pos = pos;
-		neighbors = new ArrayList<Nuts>();
+		neighbors = new ArrayList<Node>();
 		this.east = east;
 		if(east) 
 			routes++;

@@ -1,6 +1,9 @@
 JFLAGS = -g 
 JC = javac
 JVM = java
+.phony:
+	run
+
 .SUFFIXES: .java .class
 .java.class:
 	$(JC) $(JFLAGS) $*.java
@@ -16,7 +19,7 @@ default: classes
 classes: $(CLASSES:.java=.class)
 
 run: $(MAIN).class
-	$(JVM) $(MAIN) 1000.png
+	$(JVM) -Xmx48G $(MAIN) m1.png
 
 test: $(MAIN).class
 	$(JVM) $(MAIN) 100.png
